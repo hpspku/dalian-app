@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>大联 - 学生组织内部沟通</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #ff4757;
+            --primary-light: #ff6b81;
+            --bg: #f5f5f5;
+            --white: #ffffff;
+            --text-dark: #2d3436;
+            --text-gray: #636e72;
+            --text-light: #b2bec3;
+            --border: #eee;
+            --shadow: 0 2px 12px rgba(0,0,0,0.08);
+            --radius: 12px;
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif; background: var(--bg); color: var(--text-dark); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+
+        /* App Container */
+        #app { max-width: 480px; margin: 0 auto; min-height: 100vh; background: var(--bg); position: relative; padding-bottom: 70px; }
+
+        /* Header */
+        .header { position: sticky; top: 0; z-index: 100; background: var(--primary); color: white; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(10px); }
+        .header h1 { font-size: 20px; font-weight: 700; letter-spacing: 2px; }
+        .header-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s; }
+        .header-icon:active { background: rgba(255,255,255,0.2); }
+        .header-icon img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
+
+        /* Tab Bar */
+        .tab-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: white; display: flex; border-top: 1px solid var(--border); z-index: 100; padding-bottom: env(safe-area-inset-bottom); }
+        .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 8px 0; cursor: pointer; transition: all 0.2s; color: var(--text-gray); -webkit-tap-highlight-color: transparent; }
+        .tab-item.active { color: var(--primary); }
+        .tab-item svg { width: 24px; height: 24px; margin-bottom: 2px; }
+        .tab-item span { font-size: 11px; }
+
+        /* Pages */
+        .page { display: none; animation: fadeIn 0.3s ease; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ============ 广场 Page ============ */
+        .square-page { padding: 12px; }
+        
+        /* 发布框 */
+        .post-composer { background: white; border-radius: var(--radius); padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow); }
+        .post-composer textarea { width: 100%; border: none; outline: none; resize: none; font-size: 14px; min-height: 60px; background: var(--bg); padding: 10px; border-radius: 8px; font-family: inherit; }
+        .composer-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+        .composer-tools { display: flex; gap: 16px; }
+        .composer-tool { display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--text-gray); cursor: pointer; }
+        .composer-tool svg { width: 20px; height: 20px; }
+        .btn-publish { background: var(--primary); color: white; border: none; padding: 7px 18px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .btn-publish:active { background: #e84141; }
+
+        /* 瀑布流 */
+        .waterfall { columns: 2; column-gap: 10px; }
+        .feed-card { break-inside: avoid; background: white; border-radius: var(--radius); margin-bottom: 10px; overflow: hidden; box-shadow: var(--shadow); cursor: pointer; transition: transform 0.2s; }
+        .feed-card:active { transform: scale(0.98); }
+        .feed-card img { width: 100%; display: block; }
+        .feed-card .card-body { padding: 10px; }
+        .feed-card .card-text { font-size: 13px; line-height: 1.5; color: var(--text-dark); margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .card-user { display: flex; align-items: center; justify-content: space-between; }
+        .user-info { display: flex; align-items: center; gap: 6px; }
+        .user-info img { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
+        .user-name { font-size: 12px; font-weight: 600; color: var(--text-dark); }
+        .card-actions { display: flex; align-items: center; gap: 4px; color: var(--text-gray); font-size: 11px; }
+        .like-btn { display: flex; align-items: center; gap: 2px; cursor: pointer; transition: color 0.2s; }
+        .like-btn.liked { color: var(--primary); }
+
+        /* ============ 朋友 Page ============ */
+        .friends-page { padding: 12px; }
+        
+        /* 搜索栏 */
+        .search-bar { background: white; border-radius: 24px; padding: 10px 16px; display: flex; align-items: center; gap: 8px; margin-bottom: 12px; box-shadow: var(--shadow); }
+        .search-bar svg { width: 18px; height: 18px; color: var(--text-light); flex-shrink: 0; }
+        .search-bar input { flex: 1; border: none; outline: none; font-size: 14px; background: transparent; }
+        
+        /* 好友列表 */
+        .section-title { font-size: 15px; font-weight: 700; padding: 10px 4px 6px; color: var(--text-dark); }
+        .friend-list { display: flex; flex-direction: column; gap: 8px; }
+        .friend-card { background: white; border-radius: var(--radius); padding: 12px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow); cursor: pointer; transition: transform 0.2s; -webkit-tap-highlight-color: transparent; }
+        .friend-card:active { transform: scale(0.98); }
+        .friend-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .friend-detail { flex: 1; }
+        .friend-name { font-size: 15px; font-weight: 600; }
+        .friend-desc { font-size: 12px; color: var(--text-gray); margin-top: 2px; }
+        .follow-btn { padding: 5px 14px; border-radius: 16px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; white-space: nowrap; }
+        .follow-btn.following { background: var(--bg); color: var(--text-gray); }
+        .follow-btn.not-following { background: var(--primary); color: white; }
+
+        /* 聊天页面 */
+        .chat-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 200; background: var(--bg); transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); max-width: 480px; left: 50%; transform: translateX(-50%) translateX(100%); }
+        .chat-overlay.open { transform: translateX(-50%) translateX(0); }
+        .chat-header { background: white; padding: 12px 16px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
+        .chat-back { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; -webkit-tap-highlight-color: transparent; }
+        .chat-back:active { background: var(--bg); }
+        .chat-header-info { flex: 1; }
+        .chat-header-name { font-size: 16px; font-weight: 600; }
+        .chat-header-status { font-size: 12px; color: var(--text-gray); }
+        .chat-messages { padding: 16px; min-height: calc(100vh - 130px); display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+        .msg-bubble { max-width: 75%; padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.5; word-break: break-all; animation: msgIn 0.25s ease; }
+        @keyframes msgIn { from { opacity: 0; transform: translateY(10px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .msg-sent { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 4px; }
+        .msg-received { align-self: flex-start; background: white; color: var(--text-dark); border-bottom-left-radius: 4px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+        .msg-time { text-align: center; font-size: 11px; color: var(--text-light); margin: 4px 0; }
+        .chat-input-area { position: absolute; bottom: 0; left: 0; right: 0; background: white; padding: 10px 12px; display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border); padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
+        .chat-input { flex: 1; background: var(--bg); border: none; outline: none; padding: 10px 14px; border-radius: 20px; font-size: 14px; font-family: inherit; }
+        .btn-send { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+        /* ============ 账号 Page ============ */
+        .profile-page {}
+        .profile-header { background: linear-gradient(135deg, var(--primary), #ff6b81); padding: 30px 20px 24px; color: white; text-align: center; }
+        .avatar-wrapper { position: relative; display: inline-block; }
+        .profile-avatar { width: 80px; height: 80px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.3); object-fit: cover; background: rgba(255,255,255,0.2); }
+        .avatar-edit { position: absolute; bottom: 0; right: 0; width: 26px; height: 26px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+        .avatar-edit svg { width: 14px; height: 14px; fill: var(--primary); }
+        .profile-nickname { font-size: 20px; font-weight: 700; margin-top: 10px; }
+        .profile-id { font-size: 12px; opacity: 0.8; margin-top: 4px; }
+
+        /* 设置菜单 */
+        .settings-section { padding: 12px; }
+        .settings-group { background: white; border-radius: var(--radius); overflow: hidden; margin-bottom: 12px; box-shadow: var(--shadow); }
+        .settings-item { display: flex; align-items: center; padding: 14px 16px; cursor: pointer; transition: background 0.15s; -webkit-tap-highlight-color: transparent; border-bottom: 1px solid var(--border); }
+        .settings-item:last-child { border-bottom: none; }
+        .settings-item:active { background: var(--bg); }
+        .settings-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 12px; flex-shrink: 0; }
+        .settings-icon svg { width: 18px; height: 18px; }
+        .settings-label { flex: 1; font-size: 15px; }
+        .settings-value { font-size: 14px; color: var(--text-gray); display: flex; align-items: center; gap: 4px; }
+        .settings-arrow { color: var(--text-light); }
+
+        /* Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 300; display: none; align-items: flex-end; justify-content: center; }
+        .modal-overlay.show { display: flex; animation: fadeIn 0.2s ease; }
+        .modal-content { background: white; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 20px; max-height: 85vh; overflow-y: auto; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .modal-title { font-size: 17px; font-weight: 700; text-align: center; margin-bottom: 16px; }
+        .form-group { margin-bottom: 16px; }
+        .form-label { font-size: 13px; color: var(--text-gray); margin-bottom: 6px; display: block; }
+        .form-input { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 15px; outline: none; font-family: inherit; transition: border-color 0.2s; }
+        .form-input:focus { border-color: var(--primary); }
+        .btn-modal-confirm { width: 100%; padding: 13px; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 8px; }
+        .btn-modal-cancel { width: 100%; padding: 13px; background: var(--bg); color: var(--text-dark); border: none; border-radius: 10px; font-size: 16px; margin-top: 8px; cursor: pointer; }
+        .modal-close { position: absolute; top: 16px; right: 16px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-gray); }
+
+        /* Toast */
+        .toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-20px); background: rgba(0,0,0,0.75); color: white; padding: 10px 24px; border-radius: 24px; font-size: 14px; z-index: 999; opacity: 0; transition: all 0.3s; pointer-events: none; }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* 动态详情弹窗 */
+        .detail-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 250; background: var(--bg); display: none; flex-direction: column; max-width: 480px; left: 50%; transform: translateX(-50%); }
+        .detail-overlay.show { display: flex; animation: fadeIn 0.25s ease; }
+        .detail-img { width: 100%; max-height: 40vh; object-fit: cover; }
+        .detail-body { flex: 1; padding: 16px; overflow-y: auto; }
+        .detail-user-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .detail-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .detail-uname { font-size: 16px; font-weight: 700; }
+        .detail-utime { font-size: 12px; color: var(--text-gray); }
+        .detail-text { font-size: 15px; line-height: 1.7; color: var(--text-dark); margin-bottom: 16px; }
+        .detail-actions { display: flex; gap: 24px; padding: 12px 0; border-top: 1px solid var(--border); }
+        .detail-action { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--text-gray); cursor: pointer; }
+        .detail-action.liked { color: var(--primary); }
+
+        /* 图片选择预览 */
+        .img-preview { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+        .preview-thumb { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; }
+
+        /* Empty State */
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-gray); }
+        .empty-state svg { width: 64px; height: 64px; margin-bottom: 12px; opacity: 0.3; }
+        .empty-state p { font-size: 14px; }
+    </style>
+</head>
+<body>
+<div id="app">
+    <!-- Header -->
+    <div class="header" id="appHeader">
+        <div class="header-icon" id="headerAvatar">
+            <svg viewBox="0 0 24 24" fill="white" style="width:24px;height:24px"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        </div>
+        <h1>大联</h1>
+        <div class="header-icon" onclick="showToast('通知功能开发中')">
+            <svg viewBox="0 0 24 24" fill="white" style="width:22px;height:22px"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>
+        </div>
+    </div>
+
+    <!-- ========== 广场页面 ========== -->
+    <div class="page square-page active" id="pageSquare">
+        <div class="post-composer">
+            <textarea id="postText" placeholder="分享新鲜事..." rows="2"></textarea>
+            <div class="composer-actions">
+                <div class="composer-tools">
+                    <label class="composer-tool">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                        图片
+                        <input type="file" accept="image/*" id="postImgInput" hidden onchange="handlePostImage(event)">
+                    </label>
+                </div>
+                <button class="btn-publish" onclick="publishPost()">发布</button>
+            </div>
+            <div class="img-preview" id="postImgPreview"></div>
+        </div>
+        <div class="waterfall" id="feedList"></div>
+    </div>
+
+    <!-- ========== 朋友页面 ========== -->
+    <div class="page friends-page" id="pageFriends">
+        <div class="search-bar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder="搜索成员" id="searchFriend" oninput="renderFriends()">
+        </div>
+        <div class="section-title">👥 全部成员</div>
+        <div class="friend-list" id="friendList"></div>
+    </div>
+
+    <!-- 聊天覆盖层 -->
+    <div class="chat-overlay" id="chatOverlay">
+        <div class="chat-header">
+            <div class="chat-back" onclick="closeChat()">
+                <svg viewBox="0 0 24 24" width="24" height="24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" fill="#333"/></svg>
+            </div>
+            <div class="chat-header-info">
+                <div class="chat-header-name" id="chatTargetName"></div>
+                <div class="chat-header-status">在线</div>
+            </div>
+        </div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-area">
+            <input type="text" class="chat-input" id="chatInput" placeholder="输入消息..." onkeypress="if(event.key==='Enter')sendMessage()">
+            <button class="btn-send" onclick="sendMessage()">发送</button>
+        </div>
+    </div>
+
+    <!-- ========== 账号页面 ========== -->
+    <div class="page profile-page" id="pageProfile">
+        <div class="profile-header">
+            <div class="avatar-wrapper">
+                <img class="profile-avatar" id="profileAvatar" src="" alt="">
+                <div class="avatar-edit" onclick="document.getElementById('avatarInput').click()">
+                    <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                </div>
+                <input type="file" accept="image/*" id="avatarInput" hidden onchange="changeAvatar(event)">
+            </div>
+            <div class="profile-nickname" id="profileNickname"></div>
+            <div class="profile-id" id="profileId"></div>
+        </div>
+        <div class="settings-section">
+            <div class="settings-group">
+                <div class="settings-item" onclick="openModal('nicknameModal')">
+                    <div class="settings-icon" style="background:#fff3e0"><svg viewBox="0 0 24 24" fill="#f57c00"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg></div>
+                    <span class="settings-label">修改昵称</span>
+                    <div class="settings-value"><span id="settingNickname">-</span> <span class="settings-arrow">›</span></div>
+                </div>
+                <div class="settings-item" onclick="openModal('passwordModal')">
+                    <div class="settings-icon" style="background:#e3f2fd"><svg viewBox="0 0 24 24" fill="#1976d2"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg></div>
+                    <span class="settings-label">修改密码</span>
+                    <div class="settings-value"><span class="settings-arrow">›</span></div>
+                </div>
+            </div>
+            <div class="settings-group">
+                <div class="settings-item" onclick="showToast('关于大联 v1.0.0')">
+                    <div class="settings-icon" style="background:#fce4ec"><svg viewBox="0 0 24 24" fill="#e91e63"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></div>
+                    <span class="settings-label">关于我们</span>
+                    <div class="settings-value"><span class="settings-arrow">›</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部Tab栏 -->
+    <div class="tab-bar">
+        <div class="tab-item active" data-tab="Square" onclick="switchTab('Square', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            <span>广场</span>
+        </div>
+        <div class="tab-item" data-tab="Friends" onclick="switchTab('Friends', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+            <span>朋友</span>
+        </div>
+        <div class="tab-item" data-tab="Profile" onclick="switchTab('Profile', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>账号</span>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- 昵称编辑Modal -->
+<div class="modal-overlay" id="nicknameModal">
+    <div class="modal-content">
+        <div class="modal-title">修改昵称</div>
+        <div class="form-group">
+            <label class="form-label">新昵称</label>
+            <input class="form-input" type="text" id="newNickname" placeholder="请输入新昵称" maxlength="16">
+        </div>
+        <button class="btn-modal-confirm" onclick="saveNickname()">确认修改</button>
+        <button class="btn-modal-cancel" onclick="closeAllModals()">取消</button>
+    </div>
+</div>
+
+<!-- 密码修改Modal -->
+<div class="modal-overlay" id="passwordModal">
+    <div class="modal-content">
+        <div class="modal-title">修改密码</div>
+        <div class="form-group">
+            <label class="form-label">原密码</label>
+            <input class="form-input" type="password" id="oldPwd" placeholder="请输入原密码">
+        </div>
+        <div class="form-group">
+            <label class="form-label">新密码</label>
+            <input class="form-input" type="password" id="newPwd" placeholder="请输入新密码（至少6位）" minlength="6">
+        </div>
+        <div class="form-group">
+            <label class="form-label">确认新密码</label>
+            <input class="form-input" type="password" id="confirmPwd" placeholder="再次输入新密码">
+        </div>
+        <button class="btn-modal-confirm" onclick="savePassword()">确认修改</button>
+        <button class="btn-modal-cancel" onclick="closeAllModals()">取消</button>
+    </div>
+</div>
+
+<!-- 动态详情Overlay -->
+<div class="detail-overlay" id="detailOverlay">
+    <div style="position:relative;">
+        <div style="position:absolute;top:12px;left:12px;z-index:5;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="closeDetail()">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" fill="white"/></svg>
+        </div>
+        <img class="detail-img" id="detailImg" src="" alt="">
+    </div>
+    <div class="detail-body">
+        <div class="detail-user-row">
+            <img class="detail-avatar" id="detailAvatar" src="" alt="">
+            <div>
+                <div class="detail-uname" id="detailName"></div>
+                <div class="detail-utime" id="detailTime"></div>
+            </div>
+        </div>
+        <div class="detail-text" id="detailText"></div>
+        <div class="detail-actions" id="detailActions"></div>
+    </div>
+</div>
+
+<script>
+// ==================== 数据层 ====================
+const AVATARS = [
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Luna',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Max',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Mia',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Oliver',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Sophie',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Jack',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Emma',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Noah'
+];
+
+const FEED_IMAGES = [
+    'https://picsum.photos/400/500?random=1',
+    'https://picsum.photos/400/300?random=2',
+    'https://picsum.photos/400/450?random=3',
+    'https://picsum.photos/400/350?random=4',
+    'https://picsum.photos/400/550?random=5',
+    'https://picsum.photos/400/320?random=6',
+    'https://picsum.photos/400/480?random=7',
+    'https://picsum.photos/400/380?random=8'
+];
+
+const DEFAULT_USERS = [
+    { id: 'u1', name: '李明轩', desc: '宣传部部长 · 活动达人', avatar: AVATARS[0] },
+    { id: 'u2', name: '张雨晴', desc: '外联部部长 · 社交悍匪', avatar: AVATARS[1] },
+    { id: 'u3', name: '王浩然', desc: '组织部部长 · 效率狂魔', avatar: AVATARS[2] },
+    { id: 'u4', name: '陈思琪', desc: '文艺部干事 · 才艺担当', avatar: AVATARS[3] },
+    { id: 'u5', name: '刘子涵', desc: '体育部部长 · 运动健将', avatar: AVATARS[4] },
+    { id: 'u6', name: '赵欣怡', desc: '秘书处 · 细心靠谱', avatar: AVATARS[5] },
+    { id: 'u7', name: '周俊杰', desc: '技术组组长 · 码力全开', avatar: AVATARS[6] },
+    { id: 'u8', name: '吴佳琪', desc: '新媒体运营 · 文案高手', avatar: AVATARS[7] },
+    { id: 'u9', name: '郑凯文', desc: '志愿者队长 · 服务至上', avatar: AVATARS[8] },
+    { id: 'u10', name: '孙梦瑶', desc: '设计部 · 审美在线', avatar: AVATARS[9] },
+];
+
+const DEFAULT_POSTS = [
+    { id: 'p1', userId: 'u1', userName: '李明轩', avatar: AVATARS[0], text: '今天的大联招新宣讲会圆满结束！现场来了200+同学，大家热情太高了 🎉 明天的面试准备冲了！', img: FEED_IMAGES[0], likes: 42, time: '10分钟前', liked: false },
+    { id: 'p2', userId: 'u2', userName: '张雨晴', avatar: AVATARS[1], text: '外联部拉到了新的赞助商！下学期活动经费有着落啦 💰 感谢所有努力的小伙伴', img: FEED_IMAGES[1], likes: 38, time: '25分钟前', liked: false },
+    { id: 'p3', userId: 'u4', userName: '陈思琪', avatar: AVATARS[3], text: '文艺晚会彩排花絮～舞台效果绝绝子，期待正式演出那天✨', img: FEED_IMAGES[2], likes: 56, time: '1小时前', liked: true },
+    { id: 'p4', userId: 'u5', userName: '刘子涵', avatar: AVATARS[4], text: '篮球友谊赛3:2拿下对手！团队配合太默契了 🔥', img: FEED_IMAGES[3], likes: 29, time: '2小时前', liked: false },
+    { id: 'p5', userId: 'u8', userName: '吴佳琪', avatar: AVATARS[7], text: '今日份公众号推文已发布，阅读量破千啦！感谢大家的转发支持 ❤️', img: null, likes: 33, time: '3小时前', liked: false },
+    { id: 'p6', userId: 'u10', userName: '孙梦瑶', avatar: AVATARS[9], text: '新设计的组织文化衫出炉！这个配色你们觉得怎么样？🎨', img: FEED_IMAGES[4], likes: 47, time: '4小时前', liked: false },
+    { id: 'p7', userId: 'u3', userName: '王浩然', avatar: AVATARS[2], text: '本周工作总结会议纪要已发到群里，请大家查收并确认各自的任务进度。下周的目标：全员效率提升20%！💪', img: null, likes: 15, time: '5小时前', liked: false },
+    { id: 'p8', userId: 'u6', userName: '赵欣怡', avatar: AVATARS[5], text: '办公室的新绿植到了！工作环境变美了心情也变好了 🌿', img: FEED_IMAGES[5], likes: 21, time: '昨天', liked: false },
+];
+
+// ==================== 状态管理 ====================
+let state = {
+    currentTab: 'Square',
+    currentUser: JSON.parse(localStorage.getItem('dal_user')) || {
+        id: 'me', name: '我的昵称', password: '123456', avatar: AVATARS[Math.floor(Math.random() * 10)]
+    },
+    posts: JSON.parse(localStorage.getItem('dal_posts')) || DEFAULT_POSTS,
+    users: DEFAULT_USERS,
+    followings: JSON.parse(localStorage.getItem('dal_followings')) || ['u1', 'u3'],
+    chats: JSON.parse(localStorage.getItem('dal_chats')) || {},
+    currentChatUser: null,
+    pendingPostImage: null
+};
+
+function saveState() {
+    localStorage.setItem('dal_user', JSON.stringify(state.currentUser));
+    localStorage.setItem('dal_posts', JSON.stringify(state.posts));
+    localStorage.setItem('dal_followings', JSON.stringify(state.followings));
+    localStorage.setItem('dal_chats', JSON.stringify(state.chats));
+}
+
+// ==================== Tab 切换 ====================
+function switchTab(tabName, el) {
+    state.currentTab = tabName;
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page' + tabName).classList.add('active');
+    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+    if (el) el.classList.add('active');
+    
+    // 刷新数据
+    if (tabName === 'Square') renderFeed();
+    if (tabName === 'Friends') renderFriends();
+    if (tabName === 'Profile') renderProfile();
+}
+
+// ==================== 广场模块 ====================
+function renderFeed() {
+    const container = document.getElementById('feedList');
+    container.innerHTML = state.posts.map(post => `
+        <div class="feed-card" onclick="showDetail('${post.id}')">
+            ${post.img ? `<img src="${post.img}" alt="" onerror="this.style.display='none'">` : ''}
+            <div class="card-body">
+                <div class="card-text">${post.text}</div>
+                <div class="card-user">
+                    <div class="user-info">
+                        <img src="${post.avatar}" alt="" onerror="this.src='${AVATARS[0]}'">
+                        <span class="user-name">${post.userName}</span>
+                    </div>
+                    <div class="card-actions">
+                        <div class="like-btn ${post.liked ? 'liked' : ''}" onclick="event.stopPropagation();toggleLike('${post.id}')">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="${post.liked ? '#ff4757' : 'none'}" stroke="${post.liked ? '#ff4757' : '#b2bec3'}" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                            ${post.likes}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function toggleLike(postId) {
+    const post = state.posts.find(p => p.id === postId);
+    if (!post) return;
+    post.liked = !post.liked;
+    post.likes += post.liked ? 1 : -1;
+    saveState();
+    renderFeed();
+}
+
+function handlePostImage(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+        state.pendingPostImage = ev.target.result;
+        document.getElementById('postImgPreview').innerHTML = `<img class="preview-thumb" src="${ev.target.result}" alt="">`;
+    };
+    reader.readAsDataURL(file);
+}
+
+function publishPost() {
+    const text = document.getElementById('postText').value.trim();
+    if (!text && !state.pendingPostImage) {
+        showToast('请输入内容或添加图片');
+        return;
+    }
+    const newPost = {
+        id: 'p_' + Date.now(),
+        userId: state.currentUser.id,
+        userName: state.currentUser.name,
+        avatar: state.currentUser.avatar,
+        text: text,
+        img: state.pendingPostImage || null,
+        likes: 0,
+        time: '刚刚',
+        liked: false
+    };
+    state.posts.unshift(newPost);
+    saveState();
+    document.getElementById('postText').value = '';
+    document.getElementById('postImgPreview').innerHTML = '';
+    state.pendingPostImage = null;
+    renderFeed();
+    showToast('发布成功！');
+}
+
+function showDetail(postId) {
+    const post = state.posts.find(p => p.id === postId);
+    if (!post) return;
+    document.getElementById('detailImg').src = post.img || '';
+    document.getElementById('detailImg').style.display = post.img ? 'block' : 'none';
+    document.getElementById('detailAvatar').src = post.avatar;
+    document.getElementById('detailName').textContent = post.userName;
+    document.getElementById('detailTime').textContent = post.time;
+    document.getElementById('detailText').textContent = post.text;
+    document.getElementById('detailActions').innerHTML = `
+        <div class="detail-action ${post.liked ? 'liked' : ''}" onclick="toggleLike('${postId}'); showDetail('${postId}')">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="${post.liked ? '#ff4757' : 'none'}" stroke="${post.liked ? '#ff4757' : '#b2bec3'}" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+            ${post.likes}
+        </div>
+        <div class="detail-action">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#b2bec3" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            评论
+        </div>
+    `;
+    document.getElementById('detailOverlay').classList.add('show');
+}
+
+function closeDetail() {
+    document.getElementById('detailOverlay').classList.remove('show');
+}
+
+// ==================== 朋友模块 ====================
+function renderFriends() {
+    const keyword = document.getElementById('searchFriend').value.toLowerCase();
+    const filtered = state.users.filter(u => u.name.includes(keyword) || u.desc.includes(keyword));
+    const container = document.getElementById('friendList');
+    container.innerHTML = filtered.map(u => {
+        const isFollowing = state.followings.includes(u.id);
+        return `
+        <div class="friend-card" onclick="openChat('${u.id}', '${u.name}')">
+            <img class="friend-avatar" src="${u.avatar}" alt="" onerror="this.src='${AVATARS[0]}'">
+            <div class="friend-detail">
+                <div class="friend-name">${u.name}</div>
+                <div class="friend-desc">${u.desc}</div>
+            </div>
+            <button class="follow-btn ${isFollowing ? 'following' : 'not-following'}" 
+                onclick="event.stopPropagation(); toggleFollow('${u.id}')">
+                ${isFollowing ? '已关注' : '+ 关注'}
+            </button>
+        </div>`;
+    }).join('');
+}
+
+function toggleFollow(userId) {
+    const idx = state.followings.indexOf(userId);
+    if (idx > -1) {
+        state.followings.splice(idx, 1);
+        showToast('已取消关注');
+    } else {
+        state.followings.push(userId);
+        showToast('关注成功！可以私信了');
+    }
+    saveState();
+    renderFriends();
+}
+
+function openChat(userId, userName) {
+    if (!state.followings.includes(userId)) {
+        showToast('关注后才能私信哦');
+        return;
+    }
+    state.currentChatUser = { id: userId, name: userName };
+    const chatKey = [state.currentUser.id, userId].sort().join('_');
+    if (!state.chats[chatKey]) state.chats[chatKey] = [];
+    
+    document.getElementById('chatTargetName').textContent = userName;
+    renderChat(state.chats[chatKey]);
+    document.getElementById('chatOverlay').classList.add('open');
+}
+
+function closeChat() {
+    document.getElementById('chatOverlay').classList.remove('open');
+    state.currentChatUser = null;
+}
+
+function renderChat(messages) {
+    const container = document.getElementById('chatMessages');
+    if (messages.length === 0) {
+        container.innerHTML = '<div class="empty-state"><p>暂无聊天记录，开始对话吧 ✨</p></div>';
+        return;
+    }
+    container.innerHTML = messages.map(m => {
+        const isMe = m.from === state.currentUser.id;
+        return `<div class="msg-bubble ${isMe ? 'msg-sent' : 'msg-received'}">${m.text}</div>`;
+    }).join('');
+    container.scrollTop = container.scrollHeight;
+}
+
+function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if (!text || !state.currentChatUser) return;
+    
+    const chatKey = [state.currentUser.id, state.currentChatUser.id].sort().join('_');
+    if (!state.chats[chatKey]) state.chats[chatKey] = [];
+    
+    state.chats[chatKey].push({
+        from: state.currentUser.id,
+        text: text,
+        time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+    });
+    
+    saveState();
+    input.value = '';
+    renderChat(state.chats[chatKey]);
+    
+    // 模拟对方自动回复
+    setTimeout(() => {
+        const replies = ['收到！👌', '好的呢～', '没问题！', '了解！🙆‍♂️', '哈哈好的', '👍', '稍等我看一下', '这个主意不错！'];
+        state.chats[chatKey].push({
+            from: state.currentChatUser.id,
+            text: replies[Math.floor(Math.random() * replies.length)],
+            time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+        });
+        saveState();
+        if (document.getElementById('chatOverlay').classList.contains('open')) {
+            renderChat(state.chats[chatKey]);
+        }
+    }, 800 + Math.random() * 1500);
+}
+
+// ==================== 账号模块 ====================
+function renderProfile() {
+    document.getElementById('profileAvatar').src = state.currentUser.avatar;
+    document.getElementById('profileNickname').textContent = state.currentUser.name;
+    document.getElementById('profileId').textContent = `ID: ${state.currentUser.id}`;
+    document.getElementById('settingNickname').textContent = state.currentUser.name;
+    
+    const headerAv = document.querySelector('#headerAvatar img');
+    if (headerAv) headerAv.replaceWith(Object.assign(document.createElement('img'), {
+        src: state.currentUser.avatar, style: 'width:24px;height:24px;border-radius:50%;object-fit:cover'
+    }));
+}
+
+function openModal(id) {
+    document.getElementById(id).classList.add('show');
+    if (id === 'nicknameModal') {
+        document.getElementById('newNickname').value = state.currentUser.name;
+        document.getElementById('newNickname').focus();
+    }
+}
+
+function closeAllModals() {
+    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('show'));
+}
+
+function saveNickname() {
+    const val = document.getElementById('newNickname').value.trim();
+    if (!val) { showToast('昵称不能为空'); return; }
+    state.currentUser.name = val;
+    saveState();
+    renderProfile();
+    closeAllModals();
+    showToast('昵称修改成功！');
+}
+
+function savePassword() {
+    const oldP = document.getElementById('oldPwd').value;
+    const newP = document.getElementById('newPwd').value;
+    const confirmP = document.getElementById('confirmPwd').value;
+    if (oldP !== state.currentUser.password) { showToast('原密码不正确'); return; }
+    if (newP.length < 6) { showToast('新密码至少6位'); return; }
+    if (newP !== confirmP) { showToast('两次输入的密码不一致'); return; }
+    state.currentUser.password = newP;
+    saveState();
+    document.getElementById('oldPwd').value = '';
+    document.getElementById('newPwd').value = '';
+    document.getElementById('confirmPwd').value = '';
+    closeAllModals();
+    showToast('密码修改成功！');
+}
+
+function changeAvatar(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+        state.currentUser.avatar = ev.target.result;
+        saveState();
+        renderProfile();
+        showToast('头像更新成功！');
+    };
+    reader.readAsDataURL(file);
+}
+
+// ==================== 工具函数 ====================
+let toastTimer;
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// 点击遮罩关闭
+document.querySelectorAll('.modal-overlay').forEach(m => {
+    m.addEventListener('click', function(e) {
+        if (e.target === this) closeAllModals();
+    });
+});
+document.getElementById('detailOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeDetail();
+});
+
+// ==================== 初始化 ====================
+(function init() {
+    renderFeed();
+    renderFriends();
+    renderProfile();
+})();
+</script>
+</body>
+</html>
