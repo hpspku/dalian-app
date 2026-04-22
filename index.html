@@ -2,16 +2,14 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="format-detection" content="telephone=no">
-    <title>大联 - 学生组织内部沟通</title>
+    <title>大联</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
             --primary: #ff4757;
-            --primary-light: #ff6b81;
             --bg: #f5f5f5;
             --white: #ffffff;
             --text-dark: #2d3436;
@@ -20,150 +18,361 @@
             --border: #eee;
             --shadow: 0 2px 12px rgba(0,0,0,0.08);
             --radius: 12px;
-            --safe-top: env(safe-area-inset-top, 0px);
-            --safe-bottom: env(safe-area-inset-bottom, 0px);
         }
-        html { width: 100%; height: 100%; overflow: hidden; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; background: var(--bg); color: var(--text-dark); -webkit-font-smoothing: antialiased; overflow-x: hidden; width: 100%; height: 100%; position: fixed; top: 0; left: 0; right: 0; bottom: 0; }
+        
+        html {
+            height: 100%;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: var(--bg);
+            color: var(--text-dark);
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
 
-        /* App Container */
-        #app { width: 100%; max-width: 480px; margin: 0 auto; height: 100vh; height: 100dvh; background: var(--bg); position: relative; display: flex; flex-direction: column; overflow: hidden; }
+        /* ===== App 主容器 ===== */
+        #app {
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+            background: var(--bg);
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
 
-        /* Header */
-        .header { flex-shrink: 0; position: relative; z-index: 100; background: var(--primary); color: white; padding: calc(var(--safe-top) + 10px) 16px 10px; display: flex; align-items: center; justify-content: space-between; }
+        /* ===== Header ===== */
+        .header {
+            flex-shrink: 0;
+            background: var(--primary);
+            color: white;
+            padding: 11px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+        }
         .header h1 { font-size: 20px; font-weight: 700; letter-spacing: 2px; }
-        .header-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s; }
-        .header-icon:active { background: rgba(255,255,255,0.2); }
+        .header-icon { 
+            width: 36px; height: 36px; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+        }
+        .header-icon:active { opacity: 0.7; }
         .header-icon img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
 
-        /* 页面内容区域 */
-        .page-wrapper { flex: 1; overflow: hidden; position: relative; }
+        /* ===== 内容区域 ===== */
+        .page-container {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
 
-        /* Tab Bar */
-        .tab-bar { flex-shrink: 0; background: white; display: flex; border-top: 1px solid var(--border); z-index: 100; padding-bottom: var(--safe-bottom); }
-        .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 8px 0; cursor: pointer; transition: all 0.2s; color: var(--text-gray); }
+        /* ===== Tab Bar ===== */
+        .tab-bar {
+            flex-shrink: 0;
+            background: white;
+            display: flex;
+            border-top: 1px solid var(--border);
+            z-index: 10;
+        }
+        .tab-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 9px 0;
+            color: var(--text-gray);
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
         .tab-item.active { color: var(--primary); }
         .tab-item svg { width: 24px; height: 24px; margin-bottom: 2px; }
         .tab-item span { font-size: 11px; }
 
-        /* Pages */
-        .page { display: none; animation: fadeIn 0.3s ease; position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        .page.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* ===== Page 基础样式 ===== */
+        .page {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: contain;
+        }
+        .page.active { display: block; animation: fadeIn 0.25s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* ============ 广场 Page ============ */
-        .square-page { padding: 12px; padding-bottom: 24px; }
-        
+        /* ============ 广场页 ============ */
+        .square-page { padding: 12px; padding-bottom: 30px; }
+
         /* 发布框 */
-        .post-composer { background: white; border-radius: var(--radius); padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow); }
-        .post-composer textarea { width: 100%; border: none; outline: none; resize: none; font-size: 16px; min-height: 60px; background: var(--bg); padding: 10px; border-radius: 8px; font-family: inherit; }
-        .composer-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
-        .composer-tools { display: flex; gap: 16px; }
-        .composer-tool { display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--text-gray); cursor: pointer; }
-        .composer-tool svg { width: 20px; height: 20px; }
-        .btn-publish { background: var(--primary); color: white; border: none; padding: 7px 18px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
-        .btn-publish:active { background: #e84141; }
+        .post-composer {
+            background: white;
+            border-radius: var(--radius);
+            padding: 14px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow);
+        }
+        .post-composer textarea {
+            width: 100%; border: none; outline: none; resize: none;
+            font-size: 15px; min-height: 60px;
+            background: var(--bg); padding: 10px;
+            border-radius: 8px; font-family: inherit;
+        }
+        .composer-actions {
+            display: flex; justify-content: space-between;
+            align-items: center; margin-top: 8px;
+        }
+        .composer-tools { display: flex; gap: 14px; }
+        .composer-tool {
+            display: flex; align-items: center; gap: 4px;
+            font-size: 13px; color: var(--text-gray); cursor: pointer;
+        }
+        .composer-tool svg { width: 18px; height: 18px; }
+        .btn-publish {
+            background: var(--primary); color: white; border: none;
+            padding: 7px 18px; border-radius: 20px;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+        }
+        .btn-publish:active { background: #e03c4a; }
 
         /* 瀑布流 */
         .waterfall { columns: 2; column-gap: 10px; }
-        .feed-card { break-inside: avoid; background: white; border-radius: var(--radius); margin-bottom: 10px; overflow: hidden; box-shadow: var(--shadow); cursor: pointer; transition: transform 0.2s; }
-        .feed-card:active { transform: scale(0.98); }
+        .feed-card {
+            break-inside: avoid; background: white;
+            border-radius: var(--radius); margin-bottom: 10px;
+            overflow: hidden; box-shadow: var(--shadow);
+        }
+        .feed-card:active { opacity: 0.85; }
         .feed-card img { width: 100%; display: block; }
         .feed-card .card-body { padding: 10px; }
-        .feed-card .card-text { font-size: 13px; line-height: 1.5; color: var(--text-dark); margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-        .card-user { display: flex; align-items: center; justify-content: space-between; }
+        .feed-card .card-text {
+            font-size: 13px; line-height: 1.55;
+            color: var(--text-dark); margin-bottom: 8px;
+            display: -webkit-box; -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .card-user {
+            display: flex; align-items: center;
+            justify-content: space-between;
+        }
         .user-info { display: flex; align-items: center; gap: 6px; }
         .user-info img { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
         .user-name { font-size: 12px; font-weight: 600; color: var(--text-dark); }
-        .card-actions { display: flex; align-items: center; gap: 4px; color: var(--text-gray); font-size: 11px; }
-        .like-btn { display: flex; align-items: center; gap: 2px; cursor: pointer; transition: color 0.2s; }
+        .card-actions { display: flex; align-items: center; gap: 3px; color: var(--text-gray); font-size: 11px; }
+        .like-btn { display: flex; align-items: center; gap: 2px; cursor: pointer; }
         .like-btn.liked { color: var(--primary); }
 
-        /* ============ 朋友 Page ============ */
-        .friends-page { padding: 12px; padding-bottom: 24px; }
-        
-        /* 搜索栏 */
-        .search-bar { background: white; border-radius: 24px; padding: 10px 16px; display: flex; align-items: center; gap: 8px; margin-bottom: 12px; box-shadow: var(--shadow); }
-        .search-bar svg { width: 18px; height: 18px; color: var(--text-light); flex-shrink: 0; }
-        .search-bar input { flex: 1; border: none; outline: none; font-size: 16px; background: transparent; }
-        
-        /* 好友列表 */
+        /* ============ 朋友页 ============ */
+        .friends-page { padding: 12px; padding-bottom: 30px; }
+
+        .search-bar {
+            background: white; border-radius: 24px;
+            padding: 10px 16px; display: flex;
+            align-items: center; gap: 8px; margin-bottom: 12px;
+            box-shadow: var(--shadow);
+        }
+        .search-bar svg { width: 17px; height: 17px; color: var(--text-light); flex-shrink: 0; }
+        .search-bar input {
+            flex: 1; border: none; outline: none;
+            font-size: 15px; background: transparent;
+        }
+
         .section-title { font-size: 15px; font-weight: 700; padding: 10px 4px 6px; color: var(--text-dark); }
         .friend-list { display: flex; flex-direction: column; gap: 8px; }
-        .friend-card { background: white; border-radius: var(--radius); padding: 12px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow); cursor: pointer; transition: transform 0.2s; -webkit-tap-highlight-color: transparent; }
-        .friend-card:active { transform: scale(0.98); }
+        .friend-card {
+            background: white; border-radius: var(--radius);
+            padding: 13px; display: flex; align-items: center; gap: 12px;
+            box-shadow: var(--shadow); cursor: pointer;
+        }
+        .friend-card:active { opacity: 0.85; }
         .friend-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
-        .friend-detail { flex: 1; }
+        .friend-detail { flex: 1; min-width: 0; }
         .friend-name { font-size: 15px; font-weight: 600; }
         .friend-desc { font-size: 12px; color: var(--text-gray); margin-top: 2px; }
-        .follow-btn { padding: 5px 14px; border-radius: 16px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; white-space: nowrap; }
+        .follow-btn {
+            padding: 5px 14px; border-radius: 16px; font-size: 12px;
+            font-weight: 600; cursor: pointer; border: none;
+            white-space: nowrap; flex-shrink: 0;
+        }
         .follow-btn.following { background: var(--bg); color: var(--text-gray); }
         .follow-btn.not-following { background: var(--primary); color: white; }
 
-        /* 聊天页面 */
-        .chat-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 200; background: var(--bg); transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); max-width: 480px; left: 50%; transform: translateX(-50%) translateX(100%); display: flex; flex-direction: column; }
-        .chat-overlay.open { transform: translateX(-50%) translateX(0); }
-        .chat-header { flex-shrink: 0; background: white; padding: calc(var(--safe-top) + 10px) 16px 10px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); z-index: 10; }
-        .chat-back { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; }
+        /* ============ 聊天覆盖层 ============ */
+        .chat-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 200; background: var(--bg);
+            display: none; flex-direction: column;
+        }
+        .chat-overlay.open { display: flex; }
+        
+        .chat-header {
+            flex-shrink: 0; background: white;
+            padding: 11px 16px; display: flex;
+            align-items: center; gap: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .chat-back {
+            width: 36px; height: 36px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; cursor: pointer; flex-shrink: 0;
+        }
         .chat-back:active { background: var(--bg); }
-        .chat-header-info { flex: 1; }
+        .chat-header-info { flex: 1; min-width: 0; }
         .chat-header-name { font-size: 16px; font-weight: 600; }
         .chat-header-status { font-size: 12px; color: var(--text-gray); }
-        .chat-messages { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        .msg-bubble { max-width: 75%; padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.5; word-break: break-all; animation: msgIn 0.25s ease; }
-        @keyframes msgIn { from { opacity: 0; transform: translateY(10px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+        .chat-messages {
+            flex: 1; padding: 16px;
+            display: flex; flex-direction: column; gap: 12px;
+            overflow-y: auto; -webkit-overflow-scrolling: touch;
+        }
+
+        .msg-bubble {
+            max-width: 75%; padding: 10px 14px; border-radius: 16px;
+            font-size: 14px; line-height: 1.5; word-break: break-all;
+        }
         .msg-sent { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 4px; }
         .msg-received { align-self: flex-start; background: white; color: var(--text-dark); border-bottom-left-radius: 4px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
         .msg-time { text-align: center; font-size: 11px; color: var(--text-light); margin: 4px 0; }
-        .chat-input-area { flex-shrink: 0; background: white; padding: 10px 12px; display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border); padding-bottom: calc(10px + var(--safe-bottom)); }
-        .chat-input { flex: 1; background: var(--bg); border: none; outline: none; padding: 10px 14px; border-radius: 20px; font-size: 16px; font-family: inherit; }
-        .btn-send { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; flex-shrink: 0; }
 
-        /* ============ 账号 Page ============ */
+        .chat-input-area {
+            flex-shrink: 0; background: white;
+            padding: 10px 12px; display: flex;
+            align-items: center; gap: 8px;
+            border-top: 1px solid var(--border);
+        }
+        .chat-input {
+            flex: 1; background: var(--bg); border: none; outline: none;
+            padding: 10px 14px; border-radius: 20px;
+            font-size: 15px; font-family: inherit;
+        }
+        .btn-send {
+            background: var(--primary); color: white; border: none;
+            padding: 8px 16px; border-radius: 20px;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        /* ============ 账号页 ============ */
         .profile-page { overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        .profile-header { background: linear-gradient(135deg, var(--primary), #ff6b81); padding: 30px 20px 24px; padding-top: calc(var(--safe-top) + 30px); color: white; text-align: center; }
+
+        .profile-header {
+            background: linear-gradient(135deg, var(--primary), #ff6b81);
+            padding: 28px 20px 26px; color: white; text-align: center;
+        }
         .avatar-wrapper { position: relative; display: inline-block; }
-        .profile-avatar { width: 80px; height: 80px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.3); object-fit: cover; background: rgba(255,255,255,0.2); }
-        .avatar-edit { position: absolute; bottom: 0; right: 0; width: 26px; height: 26px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+        .profile-avatar {
+            width: 76px; height: 76px; border-radius: 50%;
+            border: 3px solid rgba(255,255,255,0.35);
+            object-fit: cover; background: rgba(255,255,255,0.2);
+        }
+        .avatar-edit {
+            position: absolute; bottom: 0; right: 0;
+            width: 26px; height: 26px; background: white;
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
         .avatar-edit svg { width: 14px; height: 14px; fill: var(--primary); }
-        .profile-nickname { font-size: 20px; font-weight: 700; margin-top: 10px; }
+        .profile-nickname { font-size: 19px; font-weight: 700; margin-top: 10px; }
         .profile-id { font-size: 12px; opacity: 0.8; margin-top: 4px; }
 
-        /* 设置菜单 */
         .settings-section { padding: 12px; }
-        .settings-group { background: white; border-radius: var(--radius); overflow: hidden; margin-bottom: 12px; box-shadow: var(--shadow); }
-        .settings-item { display: flex; align-items: center; padding: 14px 16px; cursor: pointer; transition: background 0.15s; -webkit-tap-highlight-color: transparent; border-bottom: 1px solid var(--border); }
+        .settings-group {
+            background: white; border-radius: var(--radius);
+            overflow: hidden; margin-bottom: 12px; box-shadow: var(--shadow);
+        }
+        .settings-item {
+            display: flex; align-items: center;
+            padding: 14px 16px; cursor: pointer;
+            border-bottom: 1px solid var(--border);
+        }
         .settings-item:last-child { border-bottom: none; }
         .settings-item:active { background: var(--bg); }
-        .settings-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 12px; flex-shrink: 0; }
+        .settings-icon {
+            width: 32px; height: 32px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            margin-right: 12px; flex-shrink: 0;
+        }
         .settings-icon svg { width: 18px; height: 18px; }
         .settings-label { flex: 1; font-size: 15px; }
         .settings-value { font-size: 14px; color: var(--text-gray); display: flex; align-items: center; gap: 4px; }
         .settings-arrow { color: var(--text-light); }
 
-        /* Modal */
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 300; display: none; align-items: flex-end; justify-content: center; }
-        .modal-overlay.show { display: flex; animation: fadeIn 0.2s ease; }
-        .modal-content { background: white; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 24px 20px; padding-bottom: calc(24px + var(--safe-bottom)); max-height: 85vh; overflow-y: auto; -webkit-overflow-scrolling: touch; animation: slideUp 0.3s ease; }
+        /* ============ Modal 弹窗 ============ */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.45); z-index: 300;
+            display: none; align-items: flex-end;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-content {
+            background: white; width: 100%;
+            border-radius: 18px 18px 0 0;
+            padding: 22px 20px 28px;
+            max-height: 80vh; overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            animation: slideUp 0.25s ease-out;
+        }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        .modal-title { font-size: 17px; font-weight: 700; text-align: center; margin-bottom: 16px; }
+        .modal-title { font-size: 17px; font-weight: 700; text-align: center; margin-bottom: 18px; }
         .form-group { margin-bottom: 16px; }
         .form-label { font-size: 13px; color: var(--text-gray); margin-bottom: 6px; display: block; }
-        .form-input { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 16px; outline: none; font-family: inherit; transition: border-color 0.2s; }
+        .form-input {
+            width: 100%; padding: 12px 14px;
+            border: 1px solid var(--border); border-radius: 10px;
+            font-size: 15px; outline: none; font-family: inherit;
+        }
         .form-input:focus { border-color: var(--primary); }
-        .btn-modal-confirm { width: 100%; padding: 13px; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 8px; }
-        .btn-modal-cancel { width: 100%; padding: 13px; background: var(--bg); color: var(--text-dark); border: none; border-radius: 10px; font-size: 16px; margin-top: 8px; cursor: pointer; }
-        .modal-close { position: absolute; top: 16px; right: 16px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-gray); }
+        .btn-modal-confirm {
+            width: 100%; padding: 13px;
+            background: var(--primary); color: white; border: none;
+            border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer;
+        }
+        .btn-modal-cancel {
+            width: 100%; padding: 13px;
+            background: var(--bg); color: var(--text-dark);
+            border: none; border-radius: 10px; font-size: 16px;
+            cursor: pointer; margin-top: 8px;
+        }
 
-        /* Toast */
-        .toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-20px); background: rgba(0,0,0,0.75); color: white; padding: 10px 24px; border-radius: 24px; font-size: 14px; z-index: 999; opacity: 0; transition: all 0.3s; pointer-events: none; }
+        /* ============ Toast 提示 ============ */
+        .toast {
+            position: fixed; top: 70px; left: 50%;
+            transform: translateX(-50%) translateY(-15px);
+            background: rgba(0,0,0,0.7); color: white;
+            padding: 9px 22px; border-radius: 24px;
+            font-size: 14px; z-index: 999;
+            opacity: 0; transition: all 0.25s;
+            pointer-events: none; white-space: nowrap;
+        }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-        /* 动态详情弹窗 */
-        .detail-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 250; background: var(--bg); display: none; flex-direction: column; max-width: 480px; left: 50%; transform: translateX(-50%); overflow: hidden; }
-        .detail-overlay.show { display: flex; animation: fadeIn 0.25s ease; }
-        .detail-img { width: 100%; max-height: 40vh; object-fit: cover; }
-        .detail-body { flex: 1; padding: 16px; overflow-y: auto; }
+        /* ============ 详情弹窗 ============ */
+        .detail-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 250; background: var(--bg);
+            display: none; flex-direction: column;
+        }
+        .detail-overlay.show { display: flex; animation: fadeIn 0.2s ease; }
+        .detail-img-wrap { position: relative; }
+        .detail-img { width: 100%; max-height: 38vh; object-fit: cover; display: block; }
+        .detail-back-btn {
+            position: absolute; top: 10px; left: 10px;
+            width: 34px; height: 34px; border-radius: 50%;
+            background: rgba(0,0,0,0.4);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+        }
+        .detail-body {
+            flex: 1; padding: 16px; overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
         .detail-user-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
         .detail-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
         .detail-uname { font-size: 16px; font-weight: 700; }
@@ -173,22 +382,20 @@
         .detail-action { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--text-gray); cursor: pointer; }
         .detail-action.liked { color: var(--primary); }
 
-        /* 图片选择预览 */
         .img-preview { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
-        .preview-thumb { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; }
+        .preview-thumb { width: 56px; height: 56px; border-radius: 8px; object-fit: cover; }
 
-        /* Empty State */
         .empty-state { text-align: center; padding: 40px 20px; color: var(--text-gray); }
-        .empty-state svg { width: 64px; height: 64px; margin-bottom: 12px; opacity: 0.3; }
         .empty-state p { font-size: 14px; }
     </style>
 </head>
 <body>
+
 <div id="app">
     <!-- Header -->
     <div class="header" id="appHeader">
         <div class="header-icon" id="headerAvatar">
-            <svg viewBox="0 0 24 24" fill="white" style="width:24px;height:24px"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            <svg viewBox="0 0 24 24" fill="white"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
         </div>
         <h1>大联</h1>
         <div class="header-icon" onclick="showToast('通知功能开发中')">
@@ -196,8 +403,10 @@
         </div>
     </div>
 
-    <!-- ========== 广场页面 ========== -->
-    <div class="page-wrapper">
+    <!-- 页面内容区 -->
+    <div class="page-container">
+
+    <!-- ========== 广场 ========== -->
     <div class="page square-page active" id="pageSquare">
         <div class="post-composer">
             <textarea id="postText" placeholder="分享新鲜事..." rows="2"></textarea>
@@ -216,7 +425,7 @@
         <div class="waterfall" id="feedList"></div>
     </div>
 
-    <!-- ========== 朋友页面 ========== -->
+    <!-- ========== 朋友 ========== -->
     <div class="page friends-page" id="pageFriends">
         <div class="search-bar">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -225,28 +434,8 @@
         <div class="section-title">👥 全部成员</div>
         <div class="friend-list" id="friendList"></div>
     </div>
-    </div>
-    <!-- 页面wrapper结束 -->
 
-    <!-- 聊天覆盖层 -->
-    <div class="chat-overlay" id="chatOverlay">
-        <div class="chat-header">
-            <div class="chat-back" onclick="closeChat()">
-                <svg viewBox="0 0 24 24" width="24" height="24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" fill="#333"/></svg>
-            </div>
-            <div class="chat-header-info">
-                <div class="chat-header-name" id="chatTargetName"></div>
-                <div class="chat-header-status">在线</div>
-            </div>
-        </div>
-        <div class="chat-messages" id="chatMessages"></div>
-        <div class="chat-input-area">
-            <input type="text" class="chat-input" id="chatInput" placeholder="输入消息..." onkeypress="if(event.key==='Enter')sendMessage()">
-            <button class="btn-send" onclick="sendMessage()">发送</button>
-        </div>
-    </div>
-
-    <!-- ========== 账号页面 ========== -->
+    <!-- ========== 账号 ========== -->
     <div class="page profile-page" id="pageProfile">
         <div class="profile-header">
             <div class="avatar-wrapper">
@@ -282,17 +471,19 @@
         </div>
     </div>
 
+    </div><!-- /page-container -->
+
     <!-- 底部Tab栏 -->
     <div class="tab-bar">
-        <div class="tab-item active" data-tab="Square" onclick="switchTab('Square', this)">
+        <div class="tab-item active" data-tab="Square" onclick="switchTab('Square',this)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
             <span>广场</span>
         </div>
-        <div class="tab-item" data-tab="Friends" onclick="switchTab('Friends', this)">
+        <div class="tab-item" data-tab="Friends" onclick="switchTab('Friends',this)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
             <span>朋友</span>
         </div>
-        <div class="tab-item" data-tab="Profile" onclick="switchTab('Profile', this)">
+        <div class="tab-item" data-tab="Profile" onclick="switchTab('Profile',this)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             <span>账号</span>
         </div>
@@ -302,12 +493,11 @@
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<!-- 昵称编辑Modal -->
-<div class="modal-overlay" id="nicknameModal">
+<!-- 昵称Modal -->
+<div class="modal-overlay" id="nicknameModal" onclick="if(event.target===this)closeAllModals()">
     <div class="modal-content">
         <div class="modal-title">修改昵称</div>
         <div class="form-group">
-            <label class="form-label">新昵称</label>
             <input class="form-input" type="text" id="newNickname" placeholder="请输入新昵称" maxlength="16">
         </div>
         <button class="btn-modal-confirm" onclick="saveNickname()">确认修改</button>
@@ -315,32 +505,29 @@
     </div>
 </div>
 
-<!-- 密码修改Modal -->
-<div class="modal-overlay" id="passwordModal">
+<!-- 密码Modal -->
+<div class="modal-overlay" id="passwordModal" onclick="if(event.target===this)closeAllModals()">
     <div class="modal-content">
         <div class="modal-title">修改密码</div>
         <div class="form-group">
-            <label class="form-label">原密码</label>
             <input class="form-input" type="password" id="oldPwd" placeholder="请输入原密码">
         </div>
         <div class="form-group">
-            <label class="form-label">新密码</label>
-            <input class="form-input" type="password" id="newPwd" placeholder="请输入新密码（至少6位）" minlength="6">
+            <input class="form-input" type="password" id="newPwd" placeholder="新密码（至少6位）" minlength="6">
         </div>
         <div class="form-group">
-            <label class="form-label">确认新密码</label>
-            <input class="form-input" type="password" id="confirmPwd" placeholder="再次输入新密码">
+            <input class="form-input" type="password" id="confirmPwd" placeholder="确认新密码">
         </div>
         <button class="btn-modal-confirm" onclick="savePassword()">确认修改</button>
         <button class="btn-modal-cancel" onclick="closeAllModals()">取消</button>
     </div>
 </div>
 
-<!-- 动态详情Overlay -->
-<div class="detail-overlay" id="detailOverlay">
-    <div style="position:relative;">
-        <div style="position:absolute;top:12px;left:12px;z-index:5;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="closeDetail()">
-            <svg viewBox="0 0 24 24" width="20" height="20"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" fill="white"/></svg>
+<!-- 详情弹窗 -->
+<div class="detail-overlay" id="detailOverlay" onclick="if(event.target===this)closeDetail()">
+    <div class="detail-img-wrap">
+        <div class="detail-back-btn" onclick="closeDetail()">
+            <svg viewBox="0 0 24 20" width="20" height="20"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" fill="white"/></svg>
         </div>
         <img class="detail-img" id="detailImg" src="" alt="">
     </div>
@@ -357,61 +544,25 @@
     </div>
 </div>
 
+<!-- 聊天覆盖层 -->
+<div class="chat-overlay" id="chatOverlay">
+    <div class="chat-header">
+        <div class="chat-back" onclick="closeChat()">
+            <svg viewBox="0 0 24 24" width="22" height="22"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" fill="#333"/></svg>
+        </div>
+        <div class="chat-header-info">
+            <div class="chat-header-name" id="chatTargetName"></div>
+            <div class="chat-header-status">在线</div>
+        </div>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-area">
+        <input type="text" class="chat-input" id="chatInput" placeholder="输入消息..." onkeypress="if(event.key==='Enter')sendMessage()">
+        <button class="btn-send" onclick="sendMessage()">发送</button>
+    </div>
+</div>
+
 <script>
-// ==================== 微信/移动端适配 ====================
-(function() {
-    // 阻止iOS橡皮筋效果
-    document.body.addEventListener('touchmove', function(e) {
-        if (!e.target.closest('.page, .chat-messages, .modal-content, .detail-body, textarea')) {
-            e.preventDefault();
-        }
-    }, { passive: false });
-
-    // 微信 iOS 键盘弹起时页面偏移修复
-    var isWeChat = /MicroMessenger/i.test(navigator.userAgent);
-    var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-    
-    if (isWeChat && isIOS) {
-        document.addEventListener('focusin', function(e) {
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-                setTimeout(function() {
-                    document.activeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 300);
-            }
-        });
-    }
-
-    // 微信 Android 键盘弹起后页面不回弹修复
-    if (isWeChat && !isIOS) {
-        window.addEventListener('resize', function() {
-            if (document.activeElement && 
-                (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) {
-                setTimeout(function() {
-                    document.activeElement.scrollIntoView(false);
-                }, 100);
-            }
-        });
-    }
-
-    // 设置 CSS 变量 - 实际安全区域高度
-    function setSafeArea() {
-        var bottom = 0;
-        if (typeof window.getComputedStyle !== 'undefined') {
-            var style = window.getComputedStyle(document.documentElement);
-            bottom = parseInt(style.getPropertyValue('--safe-bottom')) || 0;
-        }
-        // 如果没有 env() 支持，手动检测
-        if (window.innerWidth <= 480) {
-            var vh = window.innerHeight;
-            var vhNoBar = window.screen.height - 40;
-            if (vh < vhNoBar) {
-                // 有工具栏，不需要额外补偿
-            }
-        }
-    }
-    setSafeArea();
-})();
-
 // ==================== 数据层 ====================
 const AVATARS = [
     'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix',
@@ -438,38 +589,38 @@ const FEED_IMAGES = [
 ];
 
 const DEFAULT_USERS = [
-    { id: 'u1', name: '李明轩', desc: '宣传部部长 · 活动达人', avatar: AVATARS[0] },
-    { id: 'u2', name: '张雨晴', desc: '外联部部长 · 社交悍匪', avatar: AVATARS[1] },
-    { id: 'u3', name: '王浩然', desc: '组织部部长 · 效率狂魔', avatar: AVATARS[2] },
-    { id: 'u4', name: '陈思琪', desc: '文艺部干事 · 才艺担当', avatar: AVATARS[3] },
-    { id: 'u5', name: '刘子涵', desc: '体育部部长 · 运动健将', avatar: AVATARS[4] },
-    { id: 'u6', name: '赵欣怡', desc: '秘书处 · 细心靠谱', avatar: AVATARS[5] },
-    { id: 'u7', name: '周俊杰', desc: '技术组组长 · 码力全开', avatar: AVATARS[6] },
-    { id: 'u8', name: '吴佳琪', desc: '新媒体运营 · 文案高手', avatar: AVATARS[7] },
-    { id: 'u9', name: '郑凯文', desc: '志愿者队长 · 服务至上', avatar: AVATARS[8] },
-    { id: 'u10', name: '孙梦瑶', desc: '设计部 · 审美在线', avatar: AVATARS[9] },
+    { id:'u1',name:'李明轩',desc:'宣传部部长 · 活动达人',avatar:AVATARS[0] },
+    { id:'u2',name:'张雨晴',desc:'外联部部长 · 社交悍匪',avatar:AVATARS[1] },
+    { id:'u3',name:'王浩然',desc:'组织部部长 · 效率狂魔',avatar:AVATARS[2] },
+    { id:'u4',name:'陈思琪',desc:'文艺部干事 · 才艺担当',avatar:AVATARS[3] },
+    { id:'u5',name:'刘子涵',desc:'体育部部长 · 运动健将',avatar:AVATARS[4] },
+    { id:'u6',name:'赵欣怡',desc:'秘书处 · 细心靠谱',avatar:AVATARS[5] },
+    { id:'u7',name:'周俊杰',desc:'技术组组长 · 码力全开',avatar:AVATARS[6] },
+    { id:'u8',name:'吴佳琪',desc:'新媒体运营 · 文案高手',avatar:AVATARS[7] },
+    { id:'u9',name:'郑凯文',desc:'志愿者队长 · 服务至上',avatar:AVATARS[8] },
+    { id:'u10',name:'孙梦瑶',desc:'设计部 · 审美在线',avatar:AVATARS[9] },
 ];
 
 const DEFAULT_POSTS = [
-    { id: 'p1', userId: 'u1', userName: '李明轩', avatar: AVATARS[0], text: '今天的大联招新宣讲会圆满结束！现场来了200+同学，大家热情太高了 🎉 明天的面试准备冲了！', img: FEED_IMAGES[0], likes: 42, time: '10分钟前', liked: false },
-    { id: 'p2', userId: 'u2', userName: '张雨晴', avatar: AVATARS[1], text: '外联部拉到了新的赞助商！下学期活动经费有着落啦 💰 感谢所有努力的小伙伴', img: FEED_IMAGES[1], likes: 38, time: '25分钟前', liked: false },
-    { id: 'p3', userId: 'u4', userName: '陈思琪', avatar: AVATARS[3], text: '文艺晚会彩排花絮～舞台效果绝绝子，期待正式演出那天✨', img: FEED_IMAGES[2], likes: 56, time: '1小时前', liked: true },
-    { id: 'p4', userId: 'u5', userName: '刘子涵', avatar: AVATARS[4], text: '篮球友谊赛3:2拿下对手！团队配合太默契了 🔥', img: FEED_IMAGES[3], likes: 29, time: '2小时前', liked: false },
-    { id: 'p5', userId: 'u8', userName: '吴佳琪', avatar: AVATARS[7], text: '今日份公众号推文已发布，阅读量破千啦！感谢大家的转发支持 ❤️', img: null, likes: 33, time: '3小时前', liked: false },
-    { id: 'p6', userId: 'u10', userName: '孙梦瑶', avatar: AVATARS[9], text: '新设计的组织文化衫出炉！这个配色你们觉得怎么样？🎨', img: FEED_IMAGES[4], likes: 47, time: '4小时前', liked: false },
-    { id: 'p7', userId: 'u3', userName: '王浩然', avatar: AVATARS[2], text: '本周工作总结会议纪要已发到群里，请大家查收并确认各自的任务进度。下周的目标：全员效率提升20%！💪', img: null, likes: 15, time: '5小时前', liked: false },
-    { id: 'p8', userId: 'u6', userName: '赵欣怡', avatar: AVATARS[5], text: '办公室的新绿植到了！工作环境变美了心情也变好了 🌿', img: FEED_IMAGES[5], likes: 21, time: '昨天', liked: false },
+    {id:'p1',userId:'u1',userName:'李明轩',avatar:AVATARS[0],text:'今天的大联招新宣讲会圆满结束！现场来了200+同学，大家热情太高了 🎉 明天的面试准备冲了！',img:FEED_IMAGES[0],likes:42,time:'10分钟前',liked:false},
+    {id:'p2',userId:'u2',userName:'张雨晴',avatar:AVATARS[1],text:'外联部拉到了新的赞助商！下学期活动经费有着落啦 💰 感谢所有努力的小伙伴',img:FEED_IMAGES[1],likes:38,time:'25分钟前',liked:false},
+    {id:'p3',userId:'u4',userName:'陈思琪',avatar:AVATARS[3],text:'文艺晚会彩排花絮～舞台效果绝绝子，期待正式演出那天✨',img:FEED_IMAGES[2],likes:56,time:'1小时前',liked:true},
+    {id:'p4',userId:'u5',userName:'刘子涵',avatar:AVATARS[4],text:'篮球友谊赛3:2拿下对手！团队配合太默契了 🔥',img:FEED_IMAGES[3],likes:29,time:'2小时前',liked:false},
+    {id:'p5',userId:'u8',userName:'吴佳琪',avatar:AVATARS[7],text:'今日份公众号推文已发布，阅读量破千啦！感谢大家的转发支持 ❤️',img:null,likes:33,time:'3小时前',liked:false},
+    {id:'p6',userId:'u10',userName:'孙梦瑶',avatar:AVATARS[9],text:'新设计的组织文化衫出炉！这个配色你们觉得怎么样？🎨',img:FEED_IMAGES[4],likes:47,time:'4小时前',liked:false},
+    {id:'p7',userId:'u3',userName:'王浩然',avatar:AVATARS[2],text:'本周工作总结会议纪要已发到群里，请大家查收并确认各自的任务进度。下周的目标：全员效率提升20%！💪',img:null,likes:15,time:'5小时前',liked:false},
+    {id:'p8',userId:'u6',userName:'赵欣怡',avatar:AVATARS[5],text:'办公室的新绿植到了！工作环境变美了心情也变好了 🌿',img:FEED_IMAGES[5],likes:21,time:'昨天',liked:false},
 ];
 
 // ==================== 状态管理 ====================
 let state = {
     currentTab: 'Square',
     currentUser: JSON.parse(localStorage.getItem('dal_user')) || {
-        id: 'me', name: '我的昵称', password: '123456', avatar: AVATARS[Math.floor(Math.random() * 10)]
+        id:'me',name:'我的昵称',password:'123456',avatar:AVATARS[Math.floor(Math.random()*10)]
     },
     posts: JSON.parse(localStorage.getItem('dal_posts')) || DEFAULT_POSTS,
     users: DEFAULT_USERS,
-    followings: JSON.parse(localStorage.getItem('dal_followings')) || ['u1', 'u3'],
+    followings: JSON.parse(localStorage.getItem('dal_followings')) || ['u1','u3'],
     chats: JSON.parse(localStorage.getItem('dal_chats')) || {},
     currentChatUser: null,
     pendingPostImage: null
@@ -485,304 +636,190 @@ function saveState() {
 // ==================== Tab 切换 ====================
 function switchTab(tabName, el) {
     state.currentTab = tabName;
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById('page' + tabName).classList.add('active');
-    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-    if (el) el.classList.add('active');
-    
-    // 刷新数据
-    if (tabName === 'Square') renderFeed();
-    if (tabName === 'Friends') renderFriends();
-    if (tabName === 'Profile') renderProfile();
+    document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+    document.getElementById('page'+tabName).classList.add('active');
+    document.querySelectorAll('.tab-item').forEach(function(t){ t.classList.remove('active'); });
+    if(el) el.classList.add('active');
+    if(tabName==='Square') renderFeed();
+    if(tabName==='Friends') renderFriends();
+    if(tabName==='Profile') renderProfile();
 }
 
 // ==================== 广场模块 ====================
 function renderFeed() {
-    const container = document.getElementById('feedList');
-    container.innerHTML = state.posts.map(post => `
-        <div class="feed-card" onclick="showDetail('${post.id}')">
-            ${post.img ? `<img src="${post.img}" alt="" onerror="this.style.display='none'">` : ''}
-            <div class="card-body">
-                <div class="card-text">${post.text}</div>
-                <div class="card-user">
-                    <div class="user-info">
-                        <img src="${post.avatar}" alt="" onerror="this.src='${AVATARS[0]}'">
-                        <span class="user-name">${post.userName}</span>
-                    </div>
-                    <div class="card-actions">
-                        <div class="like-btn ${post.liked ? 'liked' : ''}" onclick="event.stopPropagation();toggleLike('${post.id}')">
-                            <svg viewBox="0 0 24 24" width="14" height="14" fill="${post.liked ? '#ff4757' : 'none'}" stroke="${post.liked ? '#ff4757' : '#b2bec3'}" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-                            ${post.likes}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `).join('');
+    const container=document.getElementById('feedList');
+    container.innerHTML=state.posts.map(function(post){
+        return '<div class="feed-card" onclick="showDetail(\''+post.id+'\')">'+
+            (post.img?'<img src="'+post.img+'" onerror="this.style.display=\'none\'">':'')+
+            '<div class="card-body"><div class="card-text">'+post.text+'</div><div class="card-user">'+
+            '<div class="user-info"><img src="'+post.avatar+'" onerror="this.src=\''+AVATARS[0]+'\'"><span class="user-name">'+post.userName+'</span></div>'+
+            '<div class="card-actions"><div class="like-btn '+(post.liked?'liked':'')+'" onclick="event.stopPropagation();toggleLike(\''+post.id+'\')">'+
+            '<svg viewBox="0 0 24 24" width="14" height="14" fill="'+(post.liked?'#ff4757':'none')+'" stroke="'+(post.liked?'#ff4757':'#b2bec3')+'" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>'+
+            post.likes+'</div></div></div></div></div>';
+    }).join('');
 }
 
 function toggleLike(postId) {
-    const post = state.posts.find(p => p.id === postId);
-    if (!post) return;
-    post.liked = !post.liked;
-    post.likes += post.liked ? 1 : -1;
-    saveState();
-    renderFeed();
+    var post=state.posts.find(function(p){return p.id===postId});
+    if(!post)return;
+    post.liked=!post.liked; post.likes+=(post.liked?1:-1);
+    saveState(); renderFeed();
 }
 
-function handlePostImage(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(ev) {
-        state.pendingPostImage = ev.target.result;
-        document.getElementById('postImgPreview').innerHTML = `<img class="preview-thumb" src="${ev.target.result}" alt="">`;
+function handlePostImage(e){
+    var file=e.target.files[0]; if(!file)return;
+    var reader=new FileReader();
+    reader.onload=function(ev){
+        state.pendingPostImage=ev.target.result;
+        document.getElementById('postImgPreview').innerHTML='<img class="preview-thumb" src="'+ev.target.result+'">';
     };
     reader.readAsDataURL(file);
 }
 
-function publishPost() {
-    const text = document.getElementById('postText').value.trim();
-    if (!text && !state.pendingPostImage) {
-        showToast('请输入内容或添加图片');
-        return;
-    }
-    const newPost = {
-        id: 'p_' + Date.now(),
-        userId: state.currentUser.id,
-        userName: state.currentUser.name,
-        avatar: state.currentUser.avatar,
-        text: text,
-        img: state.pendingPostImage || null,
-        likes: 0,
-        time: '刚刚',
-        liked: false
-    };
-    state.posts.unshift(newPost);
+function publishPost(){
+    var text=document.getElementById('postText').value.trim();
+    if(!text&&!state.pendingPostImage){showToast('请输入内容或添加图片');return}
+    state.posts.unshift({
+        id:'p_'+Date.now(), userId:state.currentUser.id, userName:state.currentUser.name,
+        avatar:state.currentUser.avatar, text:text, img:state.pendingPostImage||null,
+        likes:0, time:'刚刚', liked:false
+    });
     saveState();
-    document.getElementById('postText').value = '';
-    document.getElementById('postImgPreview').innerHTML = '';
-    state.pendingPostImage = null;
-    renderFeed();
-    showToast('发布成功！');
+    document.getElementById('postText').value='';
+    document.getElementById('postImgPreview').innerHTML='';
+    state.pendingPostImage=null;
+    renderFeed(); showToast('发布成功！');
 }
 
-function showDetail(postId) {
-    const post = state.posts.find(p => p.id === postId);
-    if (!post) return;
-    document.getElementById('detailImg').src = post.img || '';
-    document.getElementById('detailImg').style.display = post.img ? 'block' : 'none';
-    document.getElementById('detailAvatar').src = post.avatar;
-    document.getElementById('detailName').textContent = post.userName;
-    document.getElementById('detailTime').textContent = post.time;
-    document.getElementById('detailText').textContent = post.text;
-    document.getElementById('detailActions').innerHTML = `
-        <div class="detail-action ${post.liked ? 'liked' : ''}" onclick="toggleLike('${postId}'); showDetail('${postId}')">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="${post.liked ? '#ff4757' : 'none'}" stroke="${post.liked ? '#ff4757' : '#b2bec3'}" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-            ${post.likes}
-        </div>
-        <div class="detail-action">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#b2bec3" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-            评论
-        </div>
-    `;
+function showDetail(postId){
+    var post=state.posts.find(function(p){return p.id===postId}); if(!post)return;
+    var di=document.getElementById('detailImg'); di.src=post.img||'';
+    di.style.display=post.img?'block':'none';
+    document.getElementById('detailAvatar').src=post.avatar;
+    document.getElementById('detailName').textContent=post.userName;
+    document.getElementById('detailTime').textContent=post.time;
+    document.getElementById('detailText').textContent=post.text;
+    document.getElementById('detailActions').innerHTML=
+        '<div class="detail-action '+(post.liked?'liked':'')+'" onclick="toggleLike(\''+postId+'\');showDetail(\''+postId+'\')">'+
+        '<svg viewBox="0 0 24 24" width="18" height="18" fill="'+(post.liked?'#ff4757':'none')+'" stroke="'+(post.liked?'#ff4757':'#b2bec3')+'" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg> '+
+        post.likes+'</div><div class="detail-action"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#b2bec3" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg> 评论</div>';
     document.getElementById('detailOverlay').classList.add('show');
 }
 
-function closeDetail() {
-    document.getElementById('detailOverlay').classList.remove('show');
-}
+function closeDetail(){document.getElementById('detailOverlay').classList.remove('show')}
 
 // ==================== 朋友模块 ====================
-function renderFriends() {
-    const keyword = document.getElementById('searchFriend').value.toLowerCase();
-    const filtered = state.users.filter(u => u.name.includes(keyword) || u.desc.includes(keyword));
-    const container = document.getElementById('friendList');
-    container.innerHTML = filtered.map(u => {
-        const isFollowing = state.followings.includes(u.id);
-        return `
-        <div class="friend-card" onclick="openChat('${u.id}', '${u.name}')">
-            <img class="friend-avatar" src="${u.avatar}" alt="" onerror="this.src='${AVATARS[0]}'">
-            <div class="friend-detail">
-                <div class="friend-name">${u.name}</div>
-                <div class="friend-desc">${u.desc}</div>
-            </div>
-            <button class="follow-btn ${isFollowing ? 'following' : 'not-following'}" 
-                onclick="event.stopPropagation(); toggleFollow('${u.id}')">
-                ${isFollowing ? '已关注' : '+ 关注'}
-            </button>
-        </div>`;
+function renderFriends(){
+    var keyword=document.getElementById('searchFriend').value.toLowerCase();
+    var filtered=state.users.filter(function(u){return u.name.indexOf(keyword)!==-1 || u.desc.indexOf(keyword)!==-1});
+    document.getElementById('friendList').innerHTML=filtered.map(function(u){
+        var isFollowing=state.followings.indexOf(u.id)>-1;
+        return '<div class="friend-card" onclick="openChat(\''+u.id+'\',\''+u.name+'\')">'+
+            '<img class="friend-avatar" src="'+u.avatar+'" onerror="this.src=\''+AVATARS[0]+'\'">'+
+            '<div class="friend-detail"><div class="friend-name">'+u.name+'</div><div class="friend-desc">'+u.desc+'</div></div>'+
+            '<button class="follow-btn '+(isFollowing?'following':'not-following')+'" onclick="event.stopPropagation();toggleFollow(\''+u.id+'\')">'+
+            (isFollowing?'已关注':'+ 关注')+'</button></div>';
     }).join('');
 }
 
-function toggleFollow(userId) {
-    const idx = state.followings.indexOf(userId);
-    if (idx > -1) {
-        state.followings.splice(idx, 1);
-        showToast('已取消关注');
-    } else {
-        state.followings.push(userId);
-        showToast('关注成功！可以私信了');
-    }
-    saveState();
-    renderFriends();
+function toggleFollow(userId){
+    var idx=state.followings.indexOf(userId);
+    if(idx>-1){state.followings.splice(idx,1);showToast('已取消关注')}
+    else{state.followings.push(userId);showToast('关注成功！可以私信了')}
+    saveState();renderFriends();
 }
 
-function openChat(userId, userName) {
-    if (!state.followings.includes(userId)) {
-        showToast('关注后才能私信哦');
-        return;
-    }
-    state.currentChatUser = { id: userId, name: userName };
-    const chatKey = [state.currentUser.id, userId].sort().join('_');
-    if (!state.chats[chatKey]) state.chats[chatKey] = [];
-    
-    document.getElementById('chatTargetName').textContent = userName;
+function openChat(userId, userName){
+    if(state.followings.indexOf(userId)===-1){showToast('关注后才能私信哦');return}
+    state.currentChatUser={id:userId,name:userName};
+    var chatKey=[state.currentUser.id,userId].sort().join('_');
+    if(!state.chats[chatKey])state.chats[chatKey]=[];
+    document.getElementById('chatTargetName').textContent=userName;
     renderChat(state.chats[chatKey]);
     document.getElementById('chatOverlay').classList.add('open');
 }
 
-function closeChat() {
-    document.getElementById('chatOverlay').classList.remove('open');
-    state.currentChatUser = null;
-}
+function closeChat(){document.getElementById('chatOverlay').classList.remove('open');state.currentChatUser=null}
 
-function renderChat(messages) {
-    const container = document.getElementById('chatMessages');
-    if (messages.length === 0) {
-        container.innerHTML = '<div class="empty-state"><p>暂无聊天记录，开始对话吧 ✨</p></div>';
-        return;
-    }
-    container.innerHTML = messages.map(m => {
-        const isMe = m.from === state.currentUser.id;
-        return `<div class="msg-bubble ${isMe ? 'msg-sent' : 'msg-received'}">${m.text}</div>`;
+function renderChat(messages){
+    var c=document.getElementById('chatMessages');
+    if(!messages.length){c.innerHTML='<div class="empty-state"><p>暂无聊天记录，开始对话吧 ✨</p></div>';return}
+    c.innerHTML=messages.map(function(m){
+        var isMe=m.from===state.currentUser.id;
+        return '<div class="msg-bubble '+(isMe?'msg-sent':'msg-received')+'">'+m.text+'</div>';
     }).join('');
-    container.scrollTop = container.scrollHeight;
+    c.scrollTop=c.scrollHeight;
 }
 
-function sendMessage() {
-    const input = document.getElementById('chatInput');
-    const text = input.value.trim();
-    if (!text || !state.currentChatUser) return;
-    
-    const chatKey = [state.currentUser.id, state.currentChatUser.id].sort().join('_');
-    if (!state.chats[chatKey]) state.chats[chatKey] = [];
-    
-    state.chats[chatKey].push({
-        from: state.currentUser.id,
-        text: text,
-        time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-    });
-    
-    saveState();
-    input.value = '';
+function sendMessage(){
+    var input=document.getElementById('chatInput'); var text=input.value.trim();
+    if(!text||!state.currentChatUser)return;
+    var chatKey=[state.currentUser.id,state.currentChatUser.id].sort().join('_');
+    if(!state.chats[chatKey])state.chats[chatKey]=[];
+    state.chats[chatKey].push({from:state.currentUser.id,text:text,time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})});
+    saveState(); input.value='';
     renderChat(state.chats[chatKey]);
-    
-    // 模拟对方自动回复
-    setTimeout(() => {
-        const replies = ['收到！👌', '好的呢～', '没问题！', '了解！🙆‍♂️', '哈哈好的', '👍', '稍等我看一下', '这个主意不错！'];
-        state.chats[chatKey].push({
-            from: state.currentChatUser.id,
-            text: replies[Math.floor(Math.random() * replies.length)],
-            time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-        });
+    setTimeout(function(){
+        var replies=['收到！👌','好的呢～','没问题！','了解！🙆‍♂️','哈哈好的','👍','稍等我看一下','这个主意不错！'];
+        state.chats[chatKey].push({from:state.currentChatUser.id,text:replies[Math.floor(Math.random()*replies.length)],time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})});
         saveState();
-        if (document.getElementById('chatOverlay').classList.contains('open')) {
-            renderChat(state.chats[chatKey]);
-        }
-    }, 800 + Math.random() * 1500);
+        if(document.getElementById('chatOverlay').classList.contains('open'))renderChat(state.chats[chatKey]);
+    },800+Math.random()*1500);
 }
 
 // ==================== 账号模块 ====================
-function renderProfile() {
-    document.getElementById('profileAvatar').src = state.currentUser.avatar;
-    document.getElementById('profileNickname').textContent = state.currentUser.name;
-    document.getElementById('profileId').textContent = `ID: ${state.currentUser.id}`;
-    document.getElementById('settingNickname').textContent = state.currentUser.name;
-    
-    const headerAv = document.querySelector('#headerAvatar img');
-    if (headerAv) headerAv.replaceWith(Object.assign(document.createElement('img'), {
-        src: state.currentUser.avatar, style: 'width:24px;height:24px;border-radius:50%;object-fit:cover'
-    }));
-}
-
-function openModal(id) {
-    document.getElementById(id).classList.add('show');
-    if (id === 'nicknameModal') {
-        document.getElementById('newNickname').value = state.currentUser.name;
-        document.getElementById('newNickname').focus();
+function renderProfile(){
+    document.getElementById('profileAvatar').src=state.currentUser.avatar;
+    document.getElementById('profileNickname').textContent=state.currentUser.name;
+    document.getElementById('profileId').textContent='ID: '+state.currentUser.id;
+    document.getElementById('settingNickname').textContent=state.currentUser.name;
+    var ha=document.querySelector('#headerAvatar svg');
+    if(ha&&state.currentUser.avatar){
+        ha.replaceWith(document.createElement('img'));
+        var av=document.querySelector('#headerAvatar img');
+        av.src=state.currentUser.avatar; av.style.cssText='width:24px;height:24px;border-radius:50%;object-fit:cover';
     }
 }
 
-function closeAllModals() {
-    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('show'));
+function openModal(id){document.getElementById(id).classList.add('show')}
+function closeAllModals(){document.querySelectorAll('.modal-overlay').forEach(function(m){m.classList.remove('show')})}
+
+function saveNickname(){
+    var val=document.getElementById('newNickname').value.trim();
+    if(!val){showToast('昵称不能为空');return}
+    state.currentUser.name=val; saveState(); renderProfile(); closeAllModals(); showToast('昵称修改成功！');
 }
 
-function saveNickname() {
-    const val = document.getElementById('newNickname').value.trim();
-    if (!val) { showToast('昵称不能为空'); return; }
-    state.currentUser.name = val;
-    saveState();
-    renderProfile();
-    closeAllModals();
-    showToast('昵称修改成功！');
+function savePassword(){
+    var oldP=document.getElementById('oldPwd').value;
+    var newP=document.getElementById('newPwd').value;
+    var confirmP=document.getElementById('confirmPwd').value;
+    if(oldP!==state.currentUser.password){showToast('原密码不正确');return}
+    if(newP.length<6){showToast('新密码至少6位');return}
+    if(newP!==confirmP){showToast('两次输入不一致');return}
+    state.currentUser.password=newP; saveState();
+    document.getElementById('oldPwd').value=''; document.getElementById('newPwd').value=''; document.getElementById('confirmPwd').value='';
+    closeAllModals(); showToast('密码修改成功！');
 }
 
-function savePassword() {
-    const oldP = document.getElementById('oldPwd').value;
-    const newP = document.getElementById('newPwd').value;
-    const confirmP = document.getElementById('confirmPwd').value;
-    if (oldP !== state.currentUser.password) { showToast('原密码不正确'); return; }
-    if (newP.length < 6) { showToast('新密码至少6位'); return; }
-    if (newP !== confirmP) { showToast('两次输入的密码不一致'); return; }
-    state.currentUser.password = newP;
-    saveState();
-    document.getElementById('oldPwd').value = '';
-    document.getElementById('newPwd').value = '';
-    document.getElementById('confirmPwd').value = '';
-    closeAllModals();
-    showToast('密码修改成功！');
-}
-
-function changeAvatar(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(ev) {
-        state.currentUser.avatar = ev.target.result;
-        saveState();
-        renderProfile();
-        showToast('头像更新成功！');
+function changeAvatar(e){
+    var file=e.target.files[0]; if(!file)return;
+    var reader=new FileReader();
+    reader.onload=function(ev){
+        state.currentUser.avatar=ev.target.result; saveState(); renderProfile(); showToast('头像更新成功！');
     };
     reader.readAsDataURL(file);
 }
 
 // ==================== 工具函数 ====================
-let toastTimer;
-function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+var toastTimer;
+function showToast(msg){
+    var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+    clearTimeout(toastTimer); toastTimer=setTimeout(function(){t.classList.remove('show')},2000);
 }
 
-// 点击遮罩关闭
-document.querySelectorAll('.modal-overlay').forEach(m => {
-    m.addEventListener('click', function(e) {
-        if (e.target === this) closeAllModals();
-    });
-});
-document.getElementById('detailOverlay').addEventListener('click', function(e) {
-    if (e.target === this) closeDetail();
-});
-
 // ==================== 初始化 ====================
-(function init() {
-    renderFeed();
-    renderFriends();
-    renderProfile();
-})();
+(function init(){renderFeed();renderFriends();renderProfile()})();
 </script>
 </body>
 </html>
