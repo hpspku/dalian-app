@@ -2,10 +2,13 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
     <title>大联 - 学生组织内部沟通</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         :root {
             --primary: #ff4757;
             --primary-light: #ff6b81;
@@ -17,37 +20,43 @@
             --border: #eee;
             --shadow: 0 2px 12px rgba(0,0,0,0.08);
             --radius: 12px;
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
         }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif; background: var(--bg); color: var(--text-dark); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+        html { width: 100%; height: 100%; overflow: hidden; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; background: var(--bg); color: var(--text-dark); -webkit-font-smoothing: antialiased; overflow-x: hidden; width: 100%; height: 100%; position: fixed; top: 0; left: 0; right: 0; bottom: 0; }
 
         /* App Container */
-        #app { max-width: 480px; margin: 0 auto; min-height: 100vh; background: var(--bg); position: relative; padding-bottom: 70px; }
+        #app { width: 100%; max-width: 480px; margin: 0 auto; height: 100vh; height: 100dvh; background: var(--bg); position: relative; display: flex; flex-direction: column; overflow: hidden; }
 
         /* Header */
-        .header { position: sticky; top: 0; z-index: 100; background: var(--primary); color: white; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(10px); }
+        .header { flex-shrink: 0; position: relative; z-index: 100; background: var(--primary); color: white; padding: calc(var(--safe-top) + 10px) 16px 10px; display: flex; align-items: center; justify-content: space-between; }
         .header h1 { font-size: 20px; font-weight: 700; letter-spacing: 2px; }
         .header-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s; }
         .header-icon:active { background: rgba(255,255,255,0.2); }
         .header-icon img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
 
+        /* 页面内容区域 */
+        .page-wrapper { flex: 1; overflow: hidden; position: relative; }
+
         /* Tab Bar */
-        .tab-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: white; display: flex; border-top: 1px solid var(--border); z-index: 100; padding-bottom: env(safe-area-inset-bottom); }
-        .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 8px 0; cursor: pointer; transition: all 0.2s; color: var(--text-gray); -webkit-tap-highlight-color: transparent; }
+        .tab-bar { flex-shrink: 0; background: white; display: flex; border-top: 1px solid var(--border); z-index: 100; padding-bottom: var(--safe-bottom); }
+        .tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 8px 0; cursor: pointer; transition: all 0.2s; color: var(--text-gray); }
         .tab-item.active { color: var(--primary); }
         .tab-item svg { width: 24px; height: 24px; margin-bottom: 2px; }
         .tab-item span { font-size: 11px; }
 
         /* Pages */
-        .page { display: none; animation: fadeIn 0.3s ease; }
+        .page { display: none; animation: fadeIn 0.3s ease; position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         .page.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* ============ 广场 Page ============ */
-        .square-page { padding: 12px; }
+        .square-page { padding: 12px; padding-bottom: 24px; }
         
         /* 发布框 */
         .post-composer { background: white; border-radius: var(--radius); padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow); }
-        .post-composer textarea { width: 100%; border: none; outline: none; resize: none; font-size: 14px; min-height: 60px; background: var(--bg); padding: 10px; border-radius: 8px; font-family: inherit; }
+        .post-composer textarea { width: 100%; border: none; outline: none; resize: none; font-size: 16px; min-height: 60px; background: var(--bg); padding: 10px; border-radius: 8px; font-family: inherit; }
         .composer-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
         .composer-tools { display: flex; gap: 16px; }
         .composer-tool { display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--text-gray); cursor: pointer; }
@@ -71,12 +80,12 @@
         .like-btn.liked { color: var(--primary); }
 
         /* ============ 朋友 Page ============ */
-        .friends-page { padding: 12px; }
+        .friends-page { padding: 12px; padding-bottom: 24px; }
         
         /* 搜索栏 */
         .search-bar { background: white; border-radius: 24px; padding: 10px 16px; display: flex; align-items: center; gap: 8px; margin-bottom: 12px; box-shadow: var(--shadow); }
         .search-bar svg { width: 18px; height: 18px; color: var(--text-light); flex-shrink: 0; }
-        .search-bar input { flex: 1; border: none; outline: none; font-size: 14px; background: transparent; }
+        .search-bar input { flex: 1; border: none; outline: none; font-size: 16px; background: transparent; }
         
         /* 好友列表 */
         .section-title { font-size: 15px; font-weight: 700; padding: 10px 4px 6px; color: var(--text-dark); }
@@ -92,27 +101,27 @@
         .follow-btn.not-following { background: var(--primary); color: white; }
 
         /* 聊天页面 */
-        .chat-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 200; background: var(--bg); transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); max-width: 480px; left: 50%; transform: translateX(-50%) translateX(100%); }
+        .chat-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 200; background: var(--bg); transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); max-width: 480px; left: 50%; transform: translateX(-50%) translateX(100%); display: flex; flex-direction: column; }
         .chat-overlay.open { transform: translateX(-50%) translateX(0); }
-        .chat-header { background: white; padding: 12px 16px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
-        .chat-back { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; -webkit-tap-highlight-color: transparent; }
+        .chat-header { flex-shrink: 0; background: white; padding: calc(var(--safe-top) + 10px) 16px 10px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); z-index: 10; }
+        .chat-back { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; }
         .chat-back:active { background: var(--bg); }
         .chat-header-info { flex: 1; }
         .chat-header-name { font-size: 16px; font-weight: 600; }
         .chat-header-status { font-size: 12px; color: var(--text-gray); }
-        .chat-messages { padding: 16px; min-height: calc(100vh - 130px); display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+        .chat-messages { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         .msg-bubble { max-width: 75%; padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.5; word-break: break-all; animation: msgIn 0.25s ease; }
         @keyframes msgIn { from { opacity: 0; transform: translateY(10px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
         .msg-sent { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 4px; }
         .msg-received { align-self: flex-start; background: white; color: var(--text-dark); border-bottom-left-radius: 4px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
         .msg-time { text-align: center; font-size: 11px; color: var(--text-light); margin: 4px 0; }
-        .chat-input-area { position: absolute; bottom: 0; left: 0; right: 0; background: white; padding: 10px 12px; display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border); padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
-        .chat-input { flex: 1; background: var(--bg); border: none; outline: none; padding: 10px 14px; border-radius: 20px; font-size: 14px; font-family: inherit; }
-        .btn-send { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; }
+        .chat-input-area { flex-shrink: 0; background: white; padding: 10px 12px; display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border); padding-bottom: calc(10px + var(--safe-bottom)); }
+        .chat-input { flex: 1; background: var(--bg); border: none; outline: none; padding: 10px 14px; border-radius: 20px; font-size: 16px; font-family: inherit; }
+        .btn-send { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; flex-shrink: 0; }
 
         /* ============ 账号 Page ============ */
-        .profile-page {}
-        .profile-header { background: linear-gradient(135deg, var(--primary), #ff6b81); padding: 30px 20px 24px; color: white; text-align: center; }
+        .profile-page { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        .profile-header { background: linear-gradient(135deg, var(--primary), #ff6b81); padding: 30px 20px 24px; padding-top: calc(var(--safe-top) + 30px); color: white; text-align: center; }
         .avatar-wrapper { position: relative; display: inline-block; }
         .profile-avatar { width: 80px; height: 80px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.3); object-fit: cover; background: rgba(255,255,255,0.2); }
         .avatar-edit { position: absolute; bottom: 0; right: 0; width: 26px; height: 26px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
@@ -135,12 +144,12 @@
         /* Modal */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 300; display: none; align-items: flex-end; justify-content: center; }
         .modal-overlay.show { display: flex; animation: fadeIn 0.2s ease; }
-        .modal-content { background: white; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 20px; max-height: 85vh; overflow-y: auto; animation: slideUp 0.3s ease; }
+        .modal-content { background: white; width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 24px 20px; padding-bottom: calc(24px + var(--safe-bottom)); max-height: 85vh; overflow-y: auto; -webkit-overflow-scrolling: touch; animation: slideUp 0.3s ease; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         .modal-title { font-size: 17px; font-weight: 700; text-align: center; margin-bottom: 16px; }
         .form-group { margin-bottom: 16px; }
         .form-label { font-size: 13px; color: var(--text-gray); margin-bottom: 6px; display: block; }
-        .form-input { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 15px; outline: none; font-family: inherit; transition: border-color 0.2s; }
+        .form-input { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; font-size: 16px; outline: none; font-family: inherit; transition: border-color 0.2s; }
         .form-input:focus { border-color: var(--primary); }
         .btn-modal-confirm { width: 100%; padding: 13px; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 8px; }
         .btn-modal-cancel { width: 100%; padding: 13px; background: var(--bg); color: var(--text-dark); border: none; border-radius: 10px; font-size: 16px; margin-top: 8px; cursor: pointer; }
@@ -151,7 +160,7 @@
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
         /* 动态详情弹窗 */
-        .detail-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 250; background: var(--bg); display: none; flex-direction: column; max-width: 480px; left: 50%; transform: translateX(-50%); }
+        .detail-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 250; background: var(--bg); display: none; flex-direction: column; max-width: 480px; left: 50%; transform: translateX(-50%); overflow: hidden; }
         .detail-overlay.show { display: flex; animation: fadeIn 0.25s ease; }
         .detail-img { width: 100%; max-height: 40vh; object-fit: cover; }
         .detail-body { flex: 1; padding: 16px; overflow-y: auto; }
@@ -188,6 +197,7 @@
     </div>
 
     <!-- ========== 广场页面 ========== -->
+    <div class="page-wrapper">
     <div class="page square-page active" id="pageSquare">
         <div class="post-composer">
             <textarea id="postText" placeholder="分享新鲜事..." rows="2"></textarea>
@@ -215,6 +225,8 @@
         <div class="section-title">👥 全部成员</div>
         <div class="friend-list" id="friendList"></div>
     </div>
+    </div>
+    <!-- 页面wrapper结束 -->
 
     <!-- 聊天覆盖层 -->
     <div class="chat-overlay" id="chatOverlay">
@@ -346,6 +358,60 @@
 </div>
 
 <script>
+// ==================== 微信/移动端适配 ====================
+(function() {
+    // 阻止iOS橡皮筋效果
+    document.body.addEventListener('touchmove', function(e) {
+        if (!e.target.closest('.page, .chat-messages, .modal-content, .detail-body, textarea')) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    // 微信 iOS 键盘弹起时页面偏移修复
+    var isWeChat = /MicroMessenger/i.test(navigator.userAgent);
+    var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    
+    if (isWeChat && isIOS) {
+        document.addEventListener('focusin', function(e) {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                setTimeout(function() {
+                    document.activeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            }
+        });
+    }
+
+    // 微信 Android 键盘弹起后页面不回弹修复
+    if (isWeChat && !isIOS) {
+        window.addEventListener('resize', function() {
+            if (document.activeElement && 
+                (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) {
+                setTimeout(function() {
+                    document.activeElement.scrollIntoView(false);
+                }, 100);
+            }
+        });
+    }
+
+    // 设置 CSS 变量 - 实际安全区域高度
+    function setSafeArea() {
+        var bottom = 0;
+        if (typeof window.getComputedStyle !== 'undefined') {
+            var style = window.getComputedStyle(document.documentElement);
+            bottom = parseInt(style.getPropertyValue('--safe-bottom')) || 0;
+        }
+        // 如果没有 env() 支持，手动检测
+        if (window.innerWidth <= 480) {
+            var vh = window.innerHeight;
+            var vhNoBar = window.screen.height - 40;
+            if (vh < vhNoBar) {
+                // 有工具栏，不需要额外补偿
+            }
+        }
+    }
+    setSafeArea();
+})();
+
 // ==================== 数据层 ====================
 const AVATARS = [
     'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix',
